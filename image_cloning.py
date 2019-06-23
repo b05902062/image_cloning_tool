@@ -250,15 +250,18 @@ def calculate_MAC_coordinate(mask,edge,upper_left,lower_right):
 				for i,pixel in enumerate(pixel_list):
 					pixel_list[i]=pixel/deno
 				MAC_coordinate.append(pixel_list)
-	print(MAC_coordinate[0])
+	#print(MAC_coordinate[0])
 	return MAC_coordinate
 
 def clone_clip(MAC_coordinate,clip,trgt_img,mask,edge,edge_color,x_start_np,y_start_np,x_len_np,y_len_np):
 	#from x_start_np to x_start_np+x_len_np, last pixel is included.
 	cloned=clip.copy()
 	diff_color=[]
+	#print(trgt_img.shape)
 	for i,c_edge in enumerate(edge):
 		diff=[]
+		if x_start_np+c_edge[1]>= trgt_img.shape[0] or y_start_np+c_edge[0]>=trgt_img.shape[1]:
+			print(x_start_np+c_edge[1],trgt_img.shape[0],y_start_np+c_edge[0],trgt_img.shape[1])
 		for channel in range(3):
 			if trgt_img[x_start_np+c_edge[1],y_start_np+c_edge[0]][channel]-edge_color[i][channel] <245:
 				diff.append(trgt_img[x_start_np+c_edge[1],y_start_np+c_edge[0]][channel]-edge_color[i][channel])
@@ -312,7 +315,7 @@ with open(output_name, 'w') as f:
 """
 
 if __name__=="__main__":
-	if len(sys.argv) != 3:
+	if len(sys.argv) != 4:
 		print('usage: image_cloning.py <source_img> <trgt_img> <output_img>')
 	
 	source_filename = sys.argv[1]
@@ -322,6 +325,4 @@ if __name__=="__main__":
 	clip,mask,edge,edge_color,upper_left,lower_right=select_region(source_filename)
 	MAC_coordinate=calculate_MAC_coordinate(mask,edge,upper_left,lower_right)
 	drag(trgt_filename,output_filename,MAC_coordinate,clip,mask,edge,edge_color,upper_left,lower_right)
-
-
 
