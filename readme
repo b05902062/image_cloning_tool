@@ -1,0 +1,13 @@
+use python3 create_poly.py to cutoff the photo
+	e.g. python3 create_poly.py wang.jpg wang.poly
+
+install triangle
+https://www.cs.cmu.edu/~quake/triangle.html
+
+use "./triangle/triangle -pq wang.poly" to create .ele .node .poly file
+use "./triangle/showme wang.poly" to show result
+
+todo:
+	extract boundry/mesh node from .node file
+	hiararchical boundary sampling
+	main algorithm
