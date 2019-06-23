@@ -319,7 +319,7 @@ if __name__=="__main__":
 		print('usage: image_cloning.py <source_img> <trgt_img> <output_img>')
 	
 	source_filename = sys.argv[1]
-	trgt_filename = sys.argv[1]
+	trgt_filename = sys.argv[2]
 	output_filename = sys.argv[3]
 	
 	clip,mask,edge,edge_color,upper_left,lower_right=select_region(source_filename)
