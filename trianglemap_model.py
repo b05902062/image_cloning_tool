@@ -237,21 +237,24 @@ class Mesh_model:
 			print(ang1, ang2, x, a, b ,c)
 		return w
 
-if len(sys.argv) != 5:
-	print('usage: python3 trianglemap_model.py <img> <ele> <node> <poly>')
-	print('ex. python3 trianglemap_model.py wang.jpg wang.1.ele wang.1.node wang.1.poly')
-	exit(0)
-imgfile = sys.argv[1]
-elefile = sys.argv[2]
-nodefile = sys.argv[3]
-polyfile = sys.argv[4]
 
-m = Mesh_model(imgfile, elefile, nodefile, polyfile)
+if __name__=="__main__":
 
-
-
-m.HBS('1000', draw=True)
-# print(m.nodes['2038'])
-# for i in m.mesh2boundary['2038']:
-# 	print(m.nodes[i])
+	if len(sys.argv) != 5:
+		print('usage: python3 trianglemap_model.py <img> <ele> <node> <poly>')
+		print('ex. python3 trianglemap_model.py wang.jpg wang.1.ele wang.1.node wang.1.poly')
+		exit(0)
+	imgfile = sys.argv[1]
+	elefile = sys.argv[2]
+	nodefile = sys.argv[3]
+	polyfile = sys.argv[4]
 	
+	m = Mesh_model(imgfile, elefile, nodefile, polyfile)
+	
+	
+	
+	m.HBS('1000', draw=True)
+	# print(m.nodes['2038'])
+	# for i in m.mesh2boundary['2038']:
+	# 	print(m.nodes[i])
+		
