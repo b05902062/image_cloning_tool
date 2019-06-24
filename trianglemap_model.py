@@ -39,6 +39,7 @@ class Mesh_model:
 		# 	},
 		# 	......
 		# }
+		self.p2weight = self.create_p2weight()
 
 	def load_triangle(self, file):
 
@@ -236,6 +237,20 @@ class Mesh_model:
 		if w == 'nan':
 			print(ang1, ang2, x, a, b ,c)
 		return w
+
+	def create_p2weight(self):
+		record = {}
+		for i in range(self.map.shape[1]):
+			for j in range(self.map.shape[0]):
+				if self.map[j][i] != 0:
+					record[(i, j)] = {}
+					total = 0
+					for t in self.triangles[str(self.map[j][i])]:
+						record[t] = self.distance(self.nodes[t][0], (i, j))
+						total += record[t]
+					for t in self.triangles[str(self.map[j][i])]:
+						record[t] /= total
+		return record
 
 if len(sys.argv) != 5:
 	print('usage: python3 trianglemap_model.py <img> <ele> <node> <poly>')
