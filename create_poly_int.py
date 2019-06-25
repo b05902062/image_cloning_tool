@@ -39,13 +39,13 @@ cv2.setMouseCallback('select',select_region)
 
 alpha = 0.3
 while(not finish):
-	record = np.zeros(img.shape, dtype=img.dtype)
+	record = img.copy()
 	for i in range(len(click)-1):
-		cv2.line(record, click[i], click[i+1], (0, 0, 255), 3)
+		cv2.line(record, click[i], click[i+1], (0, 0, 220), 3)
 	if drawing:
-		cv2.line(record, click[-1], (xi, yi), (0, 0, 255))
-	output = cv2.addWeighted(record, alpha, img, 1-alpha, 0)
-	cv2.imshow('select',output)
+		cv2.line(record, click[-1], (xi, yi), (0, 0, 220))
+	#output = cv2.addWeighted(record, alpha, img, 1-alpha, 0)
+	cv2.imshow('select',record)
 	k = cv2.waitKey(1) & 0xFF
 	if k == ord('m'):
 		mode = not mode
