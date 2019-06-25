@@ -140,8 +140,8 @@ class Mesh_model:
 		edge_num = len(self.edge_list)
 
 		S = edge_num // seed
-
-		candidate = [((i-S)%edge_num, i, (i+S)%edge_num) for i in range(0, edge_num, int(edge_num/16))]
+		rand = np.random.randint(edge_num)
+		candidate = [((i-S+rand)%edge_num, (i+rand)%edge_num, (i+S+rand)%edge_num) for i in range(0, edge_num, int(edge_num/16))]
 		select_edge_nodes = []
 		K = 0
 		while candidate != []:
@@ -243,13 +243,20 @@ class Mesh_model:
 
 	def create_p2weight(self):
 		record = {}
+		for i in self.edge_list:
+			record[self.nodes[i][0]] = {i: 1}
+
 		for i in range(self.map.shape[1]):
 			for j in range(self.map.shape[0]):
-				if self.map[j][i] != 0:
+				if self.map[j][i] != 0 and ((i, j) not in record):
 					record[(i, j)] = {}
 					total = 0
 					for t in self.triangles[str(self.map[j][i])]:
-						record[(i,j)][t] = self.distance(self.nodes[t][0], (i, j))
+						dis = self.distance(self.nodes[t][0], (i, j))
+						if dis == 0:
+							record[(i,j)][t] = 9999999
+						else:
+							record[(i,j)][t] = 1/dis
 						total += record[(i,j)][t]
 					for t in self.triangles[str(self.map[j][i])]:
 						record[(i,j)][t] /= total
