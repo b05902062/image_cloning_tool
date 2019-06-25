@@ -60,7 +60,7 @@ def setmousecallback_drag(event,x,y,flags,param):
 
 
 
-def drag(trgt_file,nodes,output_file,source_clip,mask_clip,edge_color_list,edge           MAC_coordinate,clip,mask,edge,edge_color,upper_left,lower_right):
+def drag(trgt_file,nodes,output_file,source_clip,mask_clip,edge_color_list,edge,mesh2boundary,p2weight,           MAC_coordinate,clip,mask,edge,edge_color,upper_left,lower_right):
 	#clip and mask is np array of size (lower_right[0]-upper_left[0]+1,lower_right[1]-upper_left[1]+1)
 	trgt_img=cv2.imread(trgt_file)
 	cpy_trgt_img=np.copy(trgt_img)
@@ -89,7 +89,7 @@ def drag(trgt_file,nodes,output_file,source_clip,mask_clip,edge_color_list,edge 
 			cv2.waitKey(10)
 			continue
 
-		cloned=clone_clip(source_clip,mask_clip,edge_color_list,edge,trgt_nodes         MAC_coordinate,clip,trgt_img,mask,edge,edge_color,x_start_np,y_start_np,x_len_np,y_len_np)
+		cloned=clone_clip(source_clip,mask_clip,edge_color_list,edge,trgt_nodes,mesh2boundary,p2weight,x_start_up,y_start_up,   )
 		cpy_trgt_img=np.copy(trgt_img)
 		#print(cpy_trgt_img[x_start_np:x_start_np+x_len_np+1,y_start_np:y_start_np+y_len_np+1])
 		cpy_trgt_img[x_start_np:x_start_np+x_len_np,y_start_np:y_start_np+y_len_np]+=cloned
@@ -103,7 +103,7 @@ def drag(trgt_file,nodes,output_file,source_clip,mask_clip,edge_color_list,edge 
 	return
 
 
-def clone_clip(source_clip,mask_clip.edge_color_list,edge,trgt_nodes         ,trgt_img,,edge_color,x_start_np,y_start_np,x_len_np,y_len_np):
+def clone_clip(source_clip,mask_clip.edge_color_list,edge,trgt_nodes,mesh2boundary,p2weight,x_start_up,y_start_up         ,trgt_img,,edge_color,x_start_np,y_start_np,x_len_np,y_len_np):
 	#from x_start_np to x_start_np+x_len_np, x[x_start_np:x_start_np+x_len_np]
 	cloned=clip.copy()
 	diff_color=[]
@@ -126,6 +126,14 @@ def clone_clip(source_clip,mask_clip.edge_color_list,edge,trgt_nodes         ,tr
 	
 	#print("diff",diff_color)
 	#print("clip",list(clip))
+
+	for x,y in trgt_nodes
+	
+
+
+
+
+
 	index=0
 	for i in range(x_start_np,x_start_np+x_len_np+1):
 		for o in range(y_start_np,y_start_np+y_len_np+1):
@@ -401,7 +409,7 @@ if __name__=="__main__":
 	edge_color_list=edge_color(source_filename,m.edge_list,m.nodes)
 	source_clip,mask_clip=clip_source(source_filename,m.mapupper_left,lower_right)
 	print("edge_color",len(edge_color_list),edge_color_list[0])
-	drag(trgt_filename,m.nodes,output_filename,source_clip,mask_clip,edge_color_list,m.edge_list        MAC_coordinate,clip,mask,edge,edge_color,upper_left,lower_right)
+	drag(trgt_filename,m.nodes,output_filename,source_clip,mask_clip,edge_color_list,m.edge_list,m.mesh2boundary,m.p2weight        MAC_coordinate,clip,mask,edge,edge_color,upper_left,lower_right)
 
 	"""	
 	clip,mask,edge,edge_color,upper_left,lower_right=select_region(source_filename)

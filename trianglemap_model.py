@@ -40,6 +40,9 @@ class Mesh_model:
 		# 	......
 		# }
 		self.p2weight = self.create_p2weight()
+		
+		#{(x,y):{id1:weight1,id2:weight2,id3:weight3},...}
+
 
 	def load_triangle(self, file):
 
@@ -246,10 +249,10 @@ class Mesh_model:
 					record[(i, j)] = {}
 					total = 0
 					for t in self.triangles[str(self.map[j][i])]:
-						record[t] = self.distance(self.nodes[t][0], (i, j))
-						total += record[t]
+						record[(i,j)][t] = self.distance(self.nodes[t][0], (i, j))
+						total += record[(i,j)][t]
 					for t in self.triangles[str(self.map[j][i])]:
-						record[t] /= total
+						record[(i,j)][t] /= total
 		return record
 
 if __name__=="__main__":
