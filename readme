@@ -6,6 +6,8 @@ description:
 
 	It offers a fast way to automatically merge a casually cropped image from a source image to a target image.
 
+	The code we implement is in ./src. Triangle is a open source library download from https://www.cs.cmu.edu/~quake/triangle.html. We do not implement this part. This program is freely available but is not to be included in commercial products.
+
 
 prerequisite:
 

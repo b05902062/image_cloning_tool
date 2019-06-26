@@ -1,1 +1,0 @@
-bash run.sh ./img/dolphon.jpg ./img/ocean.jpg ./img/demo_clone.jpg

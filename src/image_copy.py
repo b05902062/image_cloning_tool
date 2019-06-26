@@ -64,7 +64,7 @@ def drag(output_file,mask,p2weight,mesh2boundary,trgt_file,upper_left,lower_righ
 			cv2.imshow('window',trgt_img)
 			cv2.waitKey(10)
 			continue
-		"""
+		
 		#{id:np.array[b_diff,g_diff,r_diff],...}
 		edge_list_color_diff={i: trgt_img[nodes[i][0][1]+y_offset,nodes[i][0][0]+x_offset].astype(int)-src_img[nodes[i][0][1],nodes[i][0][0]].astype(int) for i in edge_list}
 		#print("edge_list_color_diff",edge_list_color_diff)	
@@ -99,7 +99,7 @@ def drag(output_file,mask,p2weight,mesh2boundary,trgt_file,upper_left,lower_righ
 			#print("(x,y)",nodes[iden][0][1],nodes[iden][0][0],diff)
 			cloned[(iden[1],iden[0])]=diff
 			#print(cloned[(iden[1],iden[0])])
-		"""
+		
 		#print("cloned",cloned.shape,list(cloned[upper_left[1]:lower_right[1]+1,upper_left[0]:lower_right[0]+1]))
 		#trgt_img_x_start=0+y_offset if 0+y_offset >=0 else 0
 		#trgt_img_x_end=src_img.shape[0]+y_offset if src_img.shape[0]+y_offset <= trgt_img.shape[0] else trgt_img.shape[0]
@@ -114,9 +114,12 @@ def drag(output_file,mask,p2weight,mesh2boundary,trgt_file,upper_left,lower_righ
 		
 		#make pixels to be cloned in trgt_img 0.
 		cpy_trgt_img[upper_left[1]+y_offset:lower_right[1]+y_offset+1,upper_left[0]+x_offset:lower_right[0]+x_offset+1]*=src_mask[upper_left[1]:lower_right[1]+1,upper_left[0]:lower_right[0]+1].reshape(lower_right[1]-upper_left[1]+1,lower_right[0]-upper_left[0]+1,1)#+cloned[upper_left[1]:lower_right[1]+1,upper_left[0]:lower_right[0]+1]
-		"""
+		cpy2_trgt_img=cpy_trgt_img.copy()
+		cpy2_trgt_img[upper_left[1]+y_offset:lower_right[1]+y_offset+1,upper_left[0]+x_offset:lower_right[0]+x_offset+1]+=cpy_src_img[upper_left[1]:lower_right[1]+1,upper_left[0]:lower_right[0]+1].astype('uint8')
+		
 		#make pixels to be cloned in trgt_img += cpy_src_img+diff
 		#make sure uint8 wouldn't overflow
+
 		cpy_src_img[upper_left[1]:lower_right[1]+1,upper_left[0]:lower_right[0]+1]+=cloned[upper_left[1]:lower_right[1]+1,upper_left[0]:lower_right[0]+1].astype(int)
 
 		overflow_mask= np.zeros(src_img.shape)
@@ -126,7 +129,7 @@ def drag(output_file,mask,p2weight,mesh2boundary,trgt_file,upper_left,lower_righ
 		overflow_mask= np.zeros(src_img.shape)+255
 		overflow_mask= cpy_src_img> overflow_mask
 		cpy_src_img[overflow_mask]=255
-		"""
+		
 		cpy_trgt_img[upper_left[1]+y_offset:lower_right[1]+y_offset+1,upper_left[0]+x_offset:lower_right[0]+x_offset+1]+=cpy_src_img[upper_left[1]:lower_right[1]+1,upper_left[0]:lower_right[0]+1].astype('uint8')
 		#cpy_trgt_img[upper_left[1]+y_offset:lower_right[1]+y_offset+1,upper_left[0]+x_offset:lower_right[0]+x_offset+1]+=cloned[upper_left[1]:lower_right[1]+1,upper_left[0]:lower_right[0]+1]
 
@@ -134,6 +137,8 @@ def drag(output_file,mask,p2weight,mesh2boundary,trgt_file,upper_left,lower_righ
 		
 		if drawing == True:
 			cv2.imwrite(output_file,cpy_trgt_img)
+			cv2.imwrite(output_file[:-4]+"_copyonly.jpg",cpy2_trgt_img)
+
 			finish=True
 			drawing=False
 

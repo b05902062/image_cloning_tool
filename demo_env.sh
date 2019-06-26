@@ -1,1 +1,0 @@
-python3 image_cloning_3.py ./img/polor_bear.jpg polor_bear.1.ele polor_bear.1.node polor_bear.1.poly ./img/env.jpg ./img/demo_env.jpg

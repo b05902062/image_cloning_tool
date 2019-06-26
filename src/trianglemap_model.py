@@ -1,7 +1,7 @@
 import cv2
 import sys
 import numpy as np
-from math import acos, tan
+from math import acos, tan,exp
 
 class Mesh_model:
 
