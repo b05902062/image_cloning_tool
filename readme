@@ -1,13 +1,40 @@
-use python3 create_poly.py to cutoff the photo
-	e.g. python3 create_poly.py wang.jpg wang.poly
+description:
+	
+	This python program by Hsiang-Sheng Tsai and Zih-min Wang is a implementaion of
 
-install triangle
-https://www.cs.cmu.edu/~quake/triangle.html
+	Zeev Farbman, Gil Hoffer, Yaron Lipman, Daniel Cohen-Or, and Dani Lischinski. 2009. Coordinates for instant image cloning. ACM Trans. Graph. 28, 3, Article 67 (July 2009), 9 pages. DOI: https://doi.org/10.1145/1531326.1531373
 
-use "./triangle/triangle -pq wang.poly" to create .ele .node .poly file
-use "./triangle/showme wang.poly" to show result
+	It offers a fast way to automatically merge a casually cropped image from a source image to a target image.
 
-todo:
-	extract boundry/mesh node from .node file
-	hiararchical boundary sampling
-	main algorithm
+
+prerequisite:
+
+	install triangle
+	https://www.cs.cmu.edu/~quake/triangle.html
+	use "./triangle/triangle -pq wang.poly" to create .ele .node .poly file
+	use "./triangle/showme wang.poly" to show result
+	
+	On ubuntu:
+
+	sudo apt install libx11-dev
+	cd ./triangle
+	make
+	
+	On mac
+	
+	brew install Caskroom/cask/xquartz	
+	cd ./triangle
+	make
+	
+	
+runing program:
+
+	bash clone.sh <source_img_path> <target_img_path> <output_img_path>
+	
+	e.g. bash ./clone.py ../img/rabbit.jpg ../img/goat.jpg ../final/zoo.jpg
+
+usage:
+
+	When first display window pops up, crop a closed region in source_img, for example a rectangle, that you want to clone into target_img.
+	The program would start to process your image afterward. This may take some time if your image is big.
+	After processing, another window containing your target_img would show up. Move your mouse into the window and you would see the cropped image appearing in the window. It also may take some time if your cropped image is big. By clicking your mouse, the cropped image would be cloned into the target_img. You can do this multiple times. When you want to save your output and leave, press any key on keyboard.
