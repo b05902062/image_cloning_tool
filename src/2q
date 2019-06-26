@@ -1,0 +1,274 @@
+import cv2
+import sys
+import numpy as np
+from math import acos, tan
+
+class Mesh_model:
+
+	def __init__(self, imgname, elefile, nodefile, polyfile):
+
+		self.img = cv2.imread(imgname)
+		self.triangles = self.load_triangle(elefile)
+		# triangles = {
+		# 	id: [id1, id2, id3]
+		# }
+
+		self.nodes = self.load_nodes(nodefile)
+		# nodes = {
+		# 	id: [(x, y), isedge?]
+		# }
+
+		self.edges = self.load_edges(polyfile)
+		# edges = {
+		# id: [id1, id2, ...]
+		# }
+
+		self.edge_list = self.create_edges_list()
+		# edge_list = [ id (consecutive ids are truely connected in img) ]
+
+		self.map, self.colormap = self.create_colormap()
+		# map = np.array((h, w)) segments are represent for triangle index		
+		# colormap = np.array((h, w, 3)) segments are represent for triangle
+
+		self.mesh2boundary = self.create_mesh2boundary()
+		# mesh2boundary = {
+		# 	id (mesh node id): {
+		# 		id1(boundary node id): weight,
+		#		id2: weight,
+		#		......
+		# 	},
+		# 	......
+		# }
+		self.p2weight = self.create_p2weight()
+
+	def load_triangle(self, file):
+
+		triangles = {}
+		with open(file, 'r') as f:
+			tri_num = int(f.readline().strip().split()[0])
+			for _ in range(tri_num):
+				index, a, b, c = f.readline().strip().split()
+				triangles[index] = [a, b, c]
+		return triangles
+
+	def load_nodes(self, file):
+
+		nodes = {}
+		with open(file, 'r') as f:
+			node_num = int(f.readline().strip().split()[0])
+			for _ in range(node_num):
+				index, x, y, edge = f.readline().strip().split()
+				nodes[index] = [(int(float(x)), int(float(y))), edge == '1']
+
+		return nodes
+
+	def load_edges(self, file):
+
+		edges = {}
+		with open(file, 'r') as f:
+			f.readline()
+			edge_num = int(f.readline().strip().split()[0])
+			for _ in range(edge_num):
+				_, a, b, _ = f.readline().strip().split()
+				if a not in edges:
+					edges[a] = [b]
+				else:
+					edges[a].append(b)
+				
+				if b not in edges:
+					edges[b] = [a]
+				else:
+					edges[b].append(a)
+
+		return edges
+
+	def create_edges_list(self):
+
+		edge_list = []
+		start = '1'
+		while(start != ''):
+			edge_list.append(start)
+			c = ''
+			for i in self.edges[start]:
+				if i not in edge_list:
+					c = i
+					break
+			start = c
+		return edge_list
+
+	def create_colormap(self):
+
+		colors = [(0, 0, 255), (0, 255, 0), (255, 0, 0), (23, 234, 150), (232, 122, 111)]
+		color_canvas = np.zeros(self.img.shape, dtype=np.int8)
+		mapping = np.zeros((self.img.shape[0], self.img.shape[1]), dtype=np.int32)
+		for i in self.triangles:
+			p = []
+			for n in self.triangles[i]:
+				p.append(self.nodes[n][0])
+			cv2.drawContours(color_canvas, [np.array(p)], 0, colors[int(i)%len(colors)], -1)
+			cv2.drawContours(mapping, [np.array(p)], 0, int(i), -1)
+		
+		return mapping, color_canvas
+	
+	def distance(self, a, b):
+		return np.sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
+
+	def degree(self, x, a, b):
+		if x == a or x == b or a == b:
+			return 0
+		
+		v1 = (a[0]-x[0], a[1]-x[1])
+		v2 = (b[0]-x[0], b[1]-x[1])
+		cosx = (v1[0]*v2[0]+v1[1]*v2[1])/(self.distance(a, x)*self.distance(b, x))
+
+		if cosx > 1:
+			cosx = 1
+		if cosx < -1:
+			cosx = -1
+
+		ang = acos(cosx)
+		# print(x, a, b, cosx, ang)
+		# if ang > 3.14 or ang < 0:
+		# 	print(ang)
+
+		return ang
+
+	def HBS(self, n, draw = False, seed = 16):
+		edge_num = len(self.edge_list)
+
+		S = edge_num // seed
+
+		candidate = [((i-S)%edge_num, i, (i+S)%edge_num) for i in range(0, edge_num, int(edge_num/16))]
+		select_edge_nodes = []
+		K = 0
+		while candidate != []:
+			S //= 2
+			buf = []
+			e_dist = edge_num/(16*2.5**K)
+			e_ang = 0.75*0.8**K
+
+			if draw:
+				tmp = self.colormap.copy()
+				cv2.circle(tmp, self.nodes[n][0], 10, (0, 255, 0), -1)
+				for i in candidate:
+					cv2.circle(tmp, self.nodes[self.edge_list[i[1]]][0], 5, (0, 0, 255), -1)
+				
+				cv2.imshow('image', tmp)
+				cv2.waitKey()
+				
+
+			while candidate != []:
+				a, x, b = candidate.pop()
+				node = self.nodes[self.edge_list[x]]
+				n1 = self.nodes[self.edge_list[a]]
+				n2 = self.nodes[self.edge_list[b]]
+				
+				dis = self.distance(self.nodes[n][0], node[0])
+				if dis > e_dist:
+					deg = self.degree(self.nodes[n][0], n1[0], node[0])
+					if deg < e_ang:
+						deg = self.degree(self.nodes[n][0], n2[0], node[0])
+						if deg < e_ang:
+							select_edge_nodes.append(x)
+							continue
+
+				for i in [(a, (x-S)%edge_num, x), ((x-S)%edge_num, x, (x+S)%edge_num), (x, (x+S)%edge_num, b)]:
+					if i not in buf:
+						buf.append(i)
+		
+			# print(K, S, buf)
+			if S == 1:
+				while buf != []:
+					a, x, b = buf.pop()
+					select_edge_nodes.append(x)
+			candidate = buf.copy()
+			K += 1
+
+		
+		select_edge_nodes.sort(key = lambda x: x)
+		select = [self.edge_list[i] for i in select_edge_nodes]
+
+		if draw:
+				tmp = self.colormap.copy()
+				cv2.circle(tmp, self.nodes[n][0], 10, (0, 255, 0), -1)
+				for i in select:
+					cv2.circle(tmp, self.nodes[i][0], 5, (0, 0, 255), -1)
+				
+				cv2.imshow('image', tmp)
+				cv2.waitKey()
+		
+		cv2.destroyAllWindows()
+		return select
+
+	def create_mesh2boundary(self):
+		
+		sample = {}
+
+		for node_id in self.nodes:
+			if not self.nodes[node_id][1]:
+				sample[node_id] = {}
+				b_list = self.HBS(node_id)
+				w_list = []
+				check_same = [self.nodes[i][0] for i in b_list]
+
+				if self.nodes[node_id][0] in check_same:
+					i = check_same.index(self.nodes[node_id][0])
+					sample[node_id] = {b_list[i]: 1}
+					continue
+
+				for i in range(len(b_list)):
+					x = self.nodes[node_id][0]
+					a = self.nodes[b_list[i-1]][0]
+					b = self.nodes[b_list[i]][0]
+					c = self.nodes[b_list[(i+1)%len(b_list)]][0]
+					w_list.append(self.count_w(x, a, b, c))
+				
+				w_list_sum = sum(w_list)
+				for i in range(len(b_list)):
+					sample[node_id][b_list[i]] = w_list[i]/w_list_sum
+
+		# print(sample)
+		return sample
+				
+	def count_w(self, x, a, b, c):
+		ang1 = self.degree(x, a, b)
+		ang2 = self.degree(x, b, c)
+		w = tan(ang1/2)+tan(ang2/2)/self.distance(x, b)
+		if w == 'nan':
+			print(ang1, ang2, x, a, b ,c)
+		return w
+
+	def create_p2weight(self):
+		record = {}
+		for i in range(self.map.shape[1]):
+			for j in range(self.map.shape[0]):
+				if self.map[j][i] != 0:
+					record[(i, j)] = {}
+					total = 0
+					for t in self.triangles[str(self.map[j][i])]:
+						record[t] = self.distance(self.nodes[t][0], (i, j))
+						total += record[t]
+					for t in self.triangles[str(self.map[j][i])]:
+						record[t] /= total
+		return record
+
+if __name__=="__main__":
+
+	if len(sys.argv) != 5:
+		print('usage: python3 trianglemap_model.py <img> <ele> <node> <poly>')
+		print('ex. python3 trianglemap_model.py wang.jpg wang.1.ele wang.1.node wang.1.poly')
+		exit(0)
+	imgfile = sys.argv[1]
+	elefile = sys.argv[2]
+	nodefile = sys.argv[3]
+	polyfile = sys.argv[4]
+	
+	m = Mesh_model(imgfile, elefile, nodefile, polyfile)
+	
+	
+	
+	m.HBS('1000', draw=True)
+	# print(m.nodes['2038'])
+	# for i in m.mesh2boundary['2038']:
+	# 	print(m.nodes[i])
+		
